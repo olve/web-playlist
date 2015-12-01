@@ -12,5 +12,5 @@
     "react": "^0.14.3",
     "react-dom": "^0.14.3"
   },
-  "//": "browserify src/main.js -t [babelify --presets es2015,react] > dist/bundle.js"
+  "//": "browserify src/app.js -t [babelify --presets es2015,react] > dist/app.js"
 }
