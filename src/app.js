@@ -148,6 +148,7 @@ class WebPlaylist extends React.Component {
 							this.audio.element.addEventListener("ended", function() {
 								this.playing = false;
 								parentPlaylist.playNextTrack(this);
+								parentPlaylist.refs.seekbar.value = 0;
 							}.bind(this));
 
 							if (playWhenReady) {
