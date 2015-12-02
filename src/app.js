@@ -1,10 +1,26 @@
 const WORKER_FILEREADER = "./FileReaderSync_worker.js";
 
+function eventContainsFiles(event) {
+	if (event.dataTransfer.types) {
+        for (let i = 0; i < event.dataTransfer.types.length; i++) {
+            if (event.dataTransfer.types[i] === "Files") {
+                return true;
+            }
+        }
+	}
+    return false;			
+}
+
+let placeholderLi = document.createElement("li");
+placeholderLi.className = "placeholder";
+
 class Test extends React.Component {
 	constructor() {
 		super();
+
 		this.state = {
 			files: [],
+			active: -1,
 		}
 	}
 	cancelEvent(event) {
@@ -13,31 +29,60 @@ class Test extends React.Component {
 		return event;
 	}
 	bubbleEvent = (event) => {
-		if (!this.props.bubble) {
+		if (eventContainsFiles(event)) {
 			return this.cancelEvent(event);
 		}
-		return event;
-	}
-	dragEnter = (event) => {
-		if (this.props.dragEnter) {
-			this.props.dragEnter(event);
+		else {
+			return event;
 		}
-		return this.bubbleEvent(event);		
+	}
+	dragStart = (event) => {
+		this.dragged = event.currentTarget;
+		event.dataTransfer.effectAllowed = "move";
+		event.dataTransfer.setData("text/html", event.currentTarget);
+	}
+	dragEnd = (event) => {
+		this.dragged.style.display = "block";
+		this.dragged.parentNode.removeChild(placeholderLi);
+
+		let files = this.state.files;
+		let from = Number(this.dragged.dataset.id);
+		let to = Number(this.over.dataset.id);
+		if (from < to) to--;
+		files.splice(to, 0, files.splice(from, 1)[0]);
+		this.setState({files: files});
+		this.forceUpdate();
 	}
 	dragOver = (event) => {
-		if (this.props.dragOver) {
-			this.props.dragOver(event);
+		if (eventContainsFiles(event)) {
+			return this.cancelEvent(event);;
 		}
-		return this.bubbleEvent(event);
-	}
-	dragLeave = (event) => {
-		if (this.props.dragLeave) {
-			this.props.dragLeave(event);
+		event.preventDefault();
+		this.dragged.style.display = "none";
+		if (event.target.className == "placeholder") return;
+		this.over = event.target;
+
+		let relY = event.clientY - this.over.offsetTop;
+		let height = this.over.offsetHeight / 2;
+		let parent = event.target.parentNode;
+
+		if (relY > height) {
+			this.nodePlacement = "after";
+			parent.insertBefore(placeholderLi, event.target.nextElementSibling);
 		}
-		return this.bubbleEvent(event);
+		else if (relY < height) {
+			this.nodePlacement = "before";
+			parent.insertBefore(placeholderLi, event.target);
+		}
+		parent.insertBefore(placeholderLi, event.target);
+
 	}
+	dragEnter = (event) => this.bubbleEvent(event);
+	dragLeave = (event) => this.bubbleEvent(event);
 	drop = (event) => {
-		if (!event.dataTransfer.files.length) return; //user dropped something other than files, stop handling event
+		if (!eventContainsFiles(event)) {
+			return this.cancelEvent(event);			
+		}
 		if (this.props.drop) {
 			this.props.drop(event);
 		}
@@ -53,12 +98,13 @@ class Test extends React.Component {
 					audio: null,
 					buffer: null,
 					playing: false,
+					index: parentPlaylist.state.files.length,
 					createAudio: function(playWhenReady) {
 						if (this.buffer !== null) {
 							let blob = new Blob([this.buffer], {type: this.data.type});
 							this.audio = new Audio([URL.createObjectURL(blob)]);
 
-							parentPlaylist.forceUpdate();
+							//parentPlaylist.forceUpdate();
 							if (playWhenReady) {
 								parentPlaylist.playFile(this);
 							}
@@ -97,7 +143,7 @@ class Test extends React.Component {
 		}
 	}
 	playFile = (fileToPlay) => {
-		var files = this.state.files;
+		let files = this.state.files;
 		for (let file of files) {
 			if (file.playing) {
 				file.audio.pause();
@@ -107,6 +153,7 @@ class Test extends React.Component {
 		if (fileToPlay.audio !== null) {
 			fileToPlay.audio.play();
 			fileToPlay.playing = true;
+			this.setState({active: fileToPlay.index});
 		}
 		else {
 			fileToPlay.read(true);
@@ -118,20 +165,33 @@ class Test extends React.Component {
 			return <p>Drop music!</p>;
 		}
 
-		var parentPlaylist = this;
+		let parentPlaylist = this;
 
 		let files = this.state.files.map((file, index) => {
 			function onclick() {
 				parentPlaylist.playFile(file);
 			}
 
-			return <li className={file.playing ? "playing" : ""} onClick={onclick} key={"file-key-"+index}>{file.data.name}</li>
+			return <li 
+				className={file.playing ? "playing" : ""}
+				onClick={onclick}
+				key={"file-key-"+index}
+				data-id={index}
+				draggable="true"
+				onDragEnd={parentPlaylist.dragEnd}
+				onDragStart={parentPlaylist.dragStart}
+			>
+				{file.data.name}
+			</li>
 		});
 
 		return(
-			<ul>
-				{files}
-			</ul>
+			<div>
+				<p>active index: {this.state.active}</p>
+				<ul>
+					{files}
+				</ul>
+			</div>
 		);
 
 	}
