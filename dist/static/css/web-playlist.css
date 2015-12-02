@@ -9,19 +9,39 @@ body, #web-playlist-wrap, .web-playlist  {
 }
 .tracklist {
 	flex: 1;
-}
-.controls {
-	background: #ccc;
+	margin-bottom: 65px;
 }
 .playing:before {
 	content: "\25B6 \0020";
 }
 
-.seekbar {
-	display: block;
-	width: 100%;
-}
 
+.controls {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #ccc;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  height: 65px;
+}
+.controls-playback {
+  display: flex;
+  justify-content: center;
+}
+progress {
+  width: 75%;
+  margin-right: 9px;
+  align-self: center;
+}
+.timepos {
+  margin-right: 9px;
+}
+.controls-seeking {
+  display: flex;
+  justify-content: center;
+}
 
 .enabledButton {
 	border: 2px solid blue;
