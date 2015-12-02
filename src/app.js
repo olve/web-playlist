@@ -22,6 +22,7 @@ class WebPlaylist extends React.Component {
 			files: [],
 			repeatAll: true,
 			repeatCurrent: false,
+			pausedTrack: null,
 		}
 	}
 	cancelEvent(event) {
@@ -105,6 +106,7 @@ class WebPlaylist extends React.Component {
 						this.playing = false;
 						this.stop = function() {
 							if (this.element !== null) {
+								this.element.pause();
 								this.element.currentTime = 0;
 								this.playing = false;
 							}
@@ -113,6 +115,7 @@ class WebPlaylist extends React.Component {
 							if (this.element !== null) {
 								this.element.play();
 								this.playing = true;
+								parentPlaylist.setState({pausedTrack: null});
 							}							
 						};
 						this.pause = function() {
@@ -193,15 +196,20 @@ class WebPlaylist extends React.Component {
 	}	
 	playFile = (fileToPlay) => {
 		if (!fileToPlay) return;
-		let files = this.state.files;
-		for (let file of files) {
-			file.audio.stop();
-		}
-		if (fileToPlay.audio.element !== null) {
+		if (this.state.pausedTrack === fileToPlay) {
 			fileToPlay.audio.play();
+			this.setState({pausedTrack: null});
 		}
 		else {
-			fileToPlay.read(true);
+			for (let file of this.state.files) {
+				file.audio.stop();
+			}
+			if (fileToPlay.audio.element !== null) {
+				fileToPlay.audio.play();
+			}
+			else {
+				fileToPlay.read(true);
+			}
 		}
 		this.forceUpdate();
 	}
@@ -212,7 +220,7 @@ class WebPlaylist extends React.Component {
 
 		let parentPlaylist = this;
 
-		let files = this.state.files.map((file, index) => {
+		let fileElements = this.state.files.map((file, index) => {
 			function onclick() {
 				parentPlaylist.playFile(file);
 			}
@@ -239,12 +247,42 @@ class WebPlaylist extends React.Component {
 			parentPlaylist.forceUpdate();
 		}
 
+
+		let activeTracks = this.state.files.map(file => {
+			if (file.audio.playing) {
+				return file;
+			}
+		}).filter(listItem => (listItem));
+
+		function pauseAll() {
+			if (activeTracks.length) {
+				parentPlaylist.setState({pausedTrack: activeTracks[0]});
+				activeTracks.forEach(file => {
+					file.audio.pause()
+				});
+				parentPlaylist.forceUpdate();
+			}
+		}
+		function playPaused() {
+			parentPlaylist.playFile(parentPlaylist.state.pausedTrack);
+		}
+
+		let playpause = null;
+
+		if (!activeTracks.length && this.state.pausedTrack === null) {
+			playpause = <button>Nothing playing...</button>
+		}
+		else {
+			playpause = (this.state.pausedTrack !== null) ? <button onClick={playPaused}>Play</button> : <button onClick={pauseAll}>Pause</button>;
+		}
+
 		return(
 			<div>
 				<button className={this.state.repeatAll ? "enabledButton" : ""} onClick={toggleRepeatAll}>Repeat all</button>
 				<button className={this.state.repeatCurrent ? "enabledButton" : ""} onClick={toggleRepeatCurrent}>Repeat current</button>
+				{playpause}
 				<ul ref="tracklist">
-					{files}
+					{fileElements}
 				</ul>
 			</div>
 		);
