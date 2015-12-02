@@ -179,6 +179,11 @@ class WebPlaylist extends React.Component {
 	}
 	playNextTrack = (current) => {
 		let files = this.state.files;
+		if (!current) {
+			if (files.length) {
+				return this.playFile(files[0]);
+			}
+		}
 
 		if (this.state.repeatCurrent) {
 			return this.playFile(current);
@@ -189,11 +194,28 @@ class WebPlaylist extends React.Component {
 			return this.playFile(next);
 		}
 		else {
-			if (this.state.repeatAll) {
+			if (this.state.repeatAll && files.length) {
 				return this.playFile(files[0]);
 			}
 		}
-	}	
+	}
+	playPrevTrack = (current) => {
+		let files = this.state.files;
+		if (!current) {
+			if (files.length) {
+				return this.playFile(files[0]);
+			}
+		}
+		let prev = current.index === 0 ? files[files.length-1] : files[current.index-1];
+		if (prev) {
+			return this.playFile(prev);
+		}
+		else {
+			if (files.length) {
+				return this.playFile(files[0]);
+			}
+		}
+	}
 	playFile = (fileToPlay) => {
 		if (!fileToPlay) return;
 		if (this.state.pausedTrack === fileToPlay) {
@@ -254,6 +276,8 @@ class WebPlaylist extends React.Component {
 			}
 		}).filter(listItem => (listItem));
 
+		let currentTrack = activeTracks.length ? activeTracks[0] : null;
+
 		function pauseAll() {
 			if (activeTracks.length) {
 				parentPlaylist.setState({pausedTrack: activeTracks[0]});
@@ -280,7 +304,11 @@ class WebPlaylist extends React.Component {
 			<div>
 				<button className={this.state.repeatAll ? "enabledButton" : ""} onClick={toggleRepeatAll}>Repeat all</button>
 				<button className={this.state.repeatCurrent ? "enabledButton" : ""} onClick={toggleRepeatCurrent}>Repeat current</button>
-				{playpause}
+				<div>
+					<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}>Previous</button>
+					{playpause}
+					<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}>Next</button>
+				</div>
 				<ul ref="tracklist">
 					{fileElements}
 				</ul>
