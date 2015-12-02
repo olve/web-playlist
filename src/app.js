@@ -20,7 +20,8 @@ class Test extends React.Component {
 
 		this.state = {
 			files: [],
-			active: -1,
+			repeatAll: true,
+			repeatCurrent: false,
 		}
 	}
 	cancelEvent(event) {
@@ -50,8 +51,13 @@ class Test extends React.Component {
 		let to = Number(this.over.dataset.id);
 		if (from < to) to--;
 		files.splice(to, 0, files.splice(from, 1)[0]);
+
+		files.forEach((file, index) => {
+			file.index = index;
+		});
+
 		this.setState({files: files});
-		this.forceUpdate();
+		this.forceUpdate(); //maybe not necessary; this.setState forceUpdates?
 	}
 	dragOver = (event) => {
 		if (eventContainsFiles(event)) {
@@ -105,6 +111,10 @@ class Test extends React.Component {
 						if (this.buffer !== null) {
 							let blob = new Blob([this.buffer], {type: this.data.type});
 							this.audio = new Audio([URL.createObjectURL(blob)]);
+							this.audio.addEventListener("ended", function() {
+								this.playing = false;
+								parentPlaylist.playNextTrack();
+							});
 
 							//parentPlaylist.forceUpdate();
 							if (playWhenReady) {
@@ -144,7 +154,32 @@ class Test extends React.Component {
 			dropzone.removeEventListener("drop", this.drop, false);
 		}
 	}
+	playNextTrack = () => {
+		let files = this.state.files;
+
+		let current = null;
+		files.forEach(file => {
+			if (file.playing) {
+				current = file;
+			}
+		});
+
+		if (this.state.repeatCurrent) {
+			return this.playFile(current);
+		}
+
+		let next = files[current.index+1];
+		if (next) {
+			return this.playFile(next);
+		}
+		else {
+			if (this.state.repeatAll) {
+				return this.playFile(files[0]);
+			}
+		}
+	}	
 	playFile = (fileToPlay) => {
+		if (!fileToPlay) return;
 		let files = this.state.files;
 		for (let file of files) {
 			if (file.playing) {
@@ -155,7 +190,7 @@ class Test extends React.Component {
 		if (fileToPlay.audio !== null) {
 			fileToPlay.audio.play();
 			fileToPlay.playing = true;
-			this.setState({active: fileToPlay.index});
+
 		}
 		else {
 			fileToPlay.read(true);
@@ -187,9 +222,17 @@ class Test extends React.Component {
 			</li>
 		});
 
+		function toggleRepeatAll() {
+			this.setState({repeatAll: !this.state.repeatAll});
+		}
+		function toggleRepeatCurrent() {
+			this.setState({repeatCurrent: !this.state.repeatCurrent});
+		}
+
 		return(
 			<div>
-				<p>active index: {this.state.active}</p>
+				<button onClick={toggleRepeatAll}>Repeat all</button>
+				<button onClick={toggleRepeatCurrent}>Repeat current</button>
 				<ul ref="tracklist">
 					{files}
 				</ul>

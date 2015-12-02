@@ -6,11 +6,12 @@
 ul {
   list-style: none;
   margin:0;
-  padding:0
+  padding:0;
 }
 li {
   padding: 5px;
-  background:#eee
+  background:#eee;
+  cursor: pointer;
 }
 
 li.placeholder {background: rgb(255,240,120);}
