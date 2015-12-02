@@ -305,10 +305,10 @@ class WebPlaylist extends React.Component {
 
 		let playpause = null;
 		if (!activeTracks.length && this.state.pausedTrack === null) {
-			playpause = <button onClick={function() {parentPlaylist.playNextTrack();}}>Play</button>
+			playpause = <button onClick={function() {parentPlaylist.playNextTrack();}}><i className="mdi mdi-play"></i></button>
 		}
 		else {
-			playpause = (this.state.pausedTrack !== null) ? <button onClick={playPaused}>Play</button> : <button onClick={pauseAll}>Pause</button>;
+			playpause = (this.state.pausedTrack !== null) ? <button onClick={playPaused}><i className="mdi mdi-play"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause"></i></button>;
 		}
 
 		let toggleRepeat = function() {
@@ -332,12 +332,15 @@ class WebPlaylist extends React.Component {
 			}
 		}.bind(this);
 
-		let repeatButtonText = "No repeat";
+		//let repeatButtonText = "No repeat";
+		let repeatButtonText = <i className="mdi mdi-repeat-off"></i>
 		if (this.state.repeatAll) {
-			repeatButtonText = "Repeating all";
+			//repeatButtonText = "Repeating all";
+			repeatButtonText = <i className="mdi mdi-repeat"></i>
 		}
 		else if (this.state.repeatCurrent) {
-			repeatButtonText = "Repeating current";
+			//repeatButtonText = "Repeating current";
+			repeatButtonText = <i className="mdi mdi-repeat-once"></i>
 		}
 
 		return(
@@ -349,12 +352,12 @@ class WebPlaylist extends React.Component {
 
 				<div className="controls">
 					<div className="controls-playback">
-						<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}>Previous</button>
+						<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}><i className="mdi mdi-skip-previous"></i></button>
 						{playpause}
-						<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}>Next</button>
+						<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}><i className="mdi mdi-skip-next"></i></button>
 					</div>
 
-					<div className="controls-seeking">
+					<div className="controls-secondary">
 						<progress ref="seekbar" value="0" max="1"></progress> 
 						<span className="timepos" ref="timepos"></span>
 						<button className="repeat-button" onClick={toggleRepeat}>{repeatButtonText}</button>
