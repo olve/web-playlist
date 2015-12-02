@@ -104,9 +104,15 @@ class WebPlaylist extends React.Component {
 					audio: new function() {
 						this.element = null;
 						this.playing = false;
+						let self = this;
 						let onTimeUpdate = function() {
 							parentPlaylist.refs.seekbar.value = this.element.currentTime / this.element.duration;
 						}.bind(this);
+						let onSeekbarClick = function(event) {
+							let percentage = event.offsetX / this.offsetWidth;
+							self.element.currentTime = percentage * self.element.duration;
+							parentPlaylist.refs.seekbar.value = percentage / 100;
+						};
 						this.stop = function() {
 							if (this.element !== null) {
 								this.element.pause();
@@ -114,6 +120,7 @@ class WebPlaylist extends React.Component {
 								this.playing = false;
 
 								this.element.removeEventListener("timeupdate", onTimeUpdate);
+								parentPlaylist.refs.seekbar.removeEventListener("click", onSeekbarClick);
 							}
 						};
 						this.play = function() {
@@ -123,6 +130,7 @@ class WebPlaylist extends React.Component {
 								parentPlaylist.setState({pausedTrack: null});
 
 								this.element.addEventListener("timeupdate", onTimeUpdate);
+								parentPlaylist.refs.seekbar.addEventListener("click", onSeekbarClick);
 							}							
 						};
 						this.pause = function() {
