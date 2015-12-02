@@ -100,27 +100,26 @@ class WebPlaylist extends React.Component {
 			if (fileData.type.startsWith("audio/")) {
 				let _file = {
 					data: fileData,
-					audio: {
-						element: null,
-						playing: false,
-						stop: function() {
+					audio: new function() {
+						this.element = null;
+						this.playing = false;
+						this.stop = function() {
 							if (this.element !== null) {
-								this.element.pause();
-								this.element.currentTime = this.element.seekable.start(0);
+								this.element.currentTime = 0;
 								this.playing = false;
 							}
-						},
-						play: function() {
+						};
+						this.play = function() {
 							if (this.element !== null) {
 								this.element.play();
 								this.playing = true;
-							}
-						},
-						pause: function() {
+							}							
+						};
+						this.pause = function() {
 							if (this.element !== null) {
 								this.element.pause();
-							}
-						}
+							}							
+						};
 					},
 					buffer: null,
 					index: parentPlaylist.state.files.length,
@@ -133,9 +132,12 @@ class WebPlaylist extends React.Component {
 								parentPlaylist.playNextTrack(this);
 							}.bind(this));
 
-							//parentPlaylist.forceUpdate();
 							if (playWhenReady) {
-								parentPlaylist.playFile(this);
+								let onCanPlay = function(event) {
+									parentPlaylist.playFile(this);
+									this.audio.element.removeEventListener(event.type, onCanPlay);
+								}.bind(this);
+								this.audio.element.addEventListener("canplay", onCanPlay);							
 							}
 						}
 					},
@@ -193,9 +195,7 @@ class WebPlaylist extends React.Component {
 		if (!fileToPlay) return;
 		let files = this.state.files;
 		for (let file of files) {
-			if (file.audio.playing) {
-				file.audio.stop();
-			}
+			file.audio.stop();
 		}
 		if (fileToPlay.audio.element !== null) {
 			fileToPlay.audio.play();
