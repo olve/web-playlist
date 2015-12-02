@@ -66,15 +66,17 @@ class Test extends React.Component {
 		let height = this.over.offsetHeight / 2;
 		let parent = event.target.parentNode;
 
-		if (relY > height) {
-			this.nodePlacement = "after";
-			parent.insertBefore(placeholderLi, event.target.nextElementSibling);
-		}
-		else if (relY < height) {
-			this.nodePlacement = "before";
+		if (parent === this.refs.tracklist) {
+			if (relY > height) {
+				this.nodePlacement = "after";
+				parent.insertBefore(placeholderLi, event.target.nextElementSibling);
+			}
+			else if (relY < height) {
+				this.nodePlacement = "before";
+				parent.insertBefore(placeholderLi, event.target);
+			}
 			parent.insertBefore(placeholderLi, event.target);
 		}
-		parent.insertBefore(placeholderLi, event.target);
 
 	}
 	dragEnter = (event) => this.bubbleEvent(event);
@@ -188,7 +190,7 @@ class Test extends React.Component {
 		return(
 			<div>
 				<p>active index: {this.state.active}</p>
-				<ul>
+				<ul ref="tracklist">
 					{files}
 				</ul>
 			</div>
