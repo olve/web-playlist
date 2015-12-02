@@ -105,13 +105,13 @@ class WebPlaylist extends React.Component {
 						this.element = null;
 						this.playing = false;
 						let self = this;
-						function secondsToMinutes(number) {
+						function secondsToPaddedMinutes(number) {
 							let minutes = Math.floor(number / 60);
-							let seconds = number - minutes*60;
-							return `${minutes}:${Math.round(seconds)}`;
+							let seconds = ("0" + Math.round(number - minutes*60)).slice(-2);
+							return `${minutes}:${seconds}`;
 						}
 						let onTimeUpdate = function() {
-							parentPlaylist.refs.timepos.textContent = secondsToMinutes(this.element.currentTime);
+							parentPlaylist.refs.timepos.textContent = secondsToPaddedMinutes(this.element.currentTime);
 							parentPlaylist.refs.seekbar.value = this.element.currentTime / this.element.duration;
 						}.bind(this);
 						let onSeekbarClick = function(event) {
@@ -339,7 +339,7 @@ class WebPlaylist extends React.Component {
 					<button className={this.state.repeatCurrent ? "repeat-current-button enabledButton" : "repeat-current-button"} onClick={toggleRepeatCurrent}>Repeat current</button>
 
 					<progress ref="seekbar" value="0" max="1"></progress> 
-					<span ref="timepos"></span>
+					<span className="timepos" ref="timepos"></span>
 				</div>
 
 			</div>
