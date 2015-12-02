@@ -1,7 +1,12 @@
 .playing {
 	color: blue;
 }
-
+.enabledButton {
+	border: 2px solid blue;
+}
+.disabledButton {
+	border: 2px solid red;
+}
 
 ul {
   list-style: none;

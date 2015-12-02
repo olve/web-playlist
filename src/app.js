@@ -14,7 +14,7 @@ function eventContainsFiles(event) {
 let placeholderLi = document.createElement("li");
 placeholderLi.className = "placeholder";
 
-class Test extends React.Component {
+class WebPlaylist extends React.Component {
 	constructor() {
 		super();
 
@@ -91,9 +91,6 @@ class Test extends React.Component {
 		if (!eventContainsFiles(event)) {
 			return this.cancelEvent(event);			
 		}
-		if (this.props.drop) {
-			this.props.drop(event);
-		}
 		event = this.cancelEvent(event);
 		event.dataTransfer.dropEffect = "copy";
 
@@ -103,18 +100,38 @@ class Test extends React.Component {
 			if (fileData.type.startsWith("audio/")) {
 				let _file = {
 					data: fileData,
-					audio: null,
+					audio: {
+						element: null,
+						playing: false,
+						stop: function() {
+							if (this.element !== null) {
+								this.element.pause();
+								this.element.currentTime = this.element.seekable.start(0);
+								this.playing = false;
+							}
+						},
+						play: function() {
+							if (this.element !== null) {
+								this.element.play();
+								this.playing = true;
+							}
+						},
+						pause: function() {
+							if (this.element !== null) {
+								this.element.pause();
+							}
+						}
+					},
 					buffer: null,
-					playing: false,
 					index: parentPlaylist.state.files.length,
 					createAudio: function(playWhenReady) {
 						if (this.buffer !== null) {
 							let blob = new Blob([this.buffer], {type: this.data.type});
-							this.audio = new Audio([URL.createObjectURL(blob)]);
-							this.audio.addEventListener("ended", function() {
+							this.audio.element = new Audio([URL.createObjectURL(blob)]);
+							this.audio.element.addEventListener("ended", function() {
 								this.playing = false;
-								parentPlaylist.playNextTrack();
-							});
+								parentPlaylist.playNextTrack(this);
+							}.bind(this));
 
 							//parentPlaylist.forceUpdate();
 							if (playWhenReady) {
@@ -131,6 +148,7 @@ class Test extends React.Component {
 						}.bind(this);
 						worker.postMessage(this.data);
 					},
+
 				}
 				this.setState({files: this.state.files.concat([_file])});
 			}
@@ -154,15 +172,8 @@ class Test extends React.Component {
 			dropzone.removeEventListener("drop", this.drop, false);
 		}
 	}
-	playNextTrack = () => {
+	playNextTrack = (current) => {
 		let files = this.state.files;
-
-		let current = null;
-		files.forEach(file => {
-			if (file.playing) {
-				current = file;
-			}
-		});
 
 		if (this.state.repeatCurrent) {
 			return this.playFile(current);
@@ -182,15 +193,12 @@ class Test extends React.Component {
 		if (!fileToPlay) return;
 		let files = this.state.files;
 		for (let file of files) {
-			if (file.playing) {
-				file.audio.pause();
-				file.playing = false;
+			if (file.audio.playing) {
+				file.audio.stop();
 			}
 		}
-		if (fileToPlay.audio !== null) {
+		if (fileToPlay.audio.element !== null) {
 			fileToPlay.audio.play();
-			fileToPlay.playing = true;
-
 		}
 		else {
 			fileToPlay.read(true);
@@ -210,7 +218,7 @@ class Test extends React.Component {
 			}
 
 			return <li 
-				className={file.playing ? "playing" : ""}
+				className={file.audio.playing ? "playing" : ""}
 				onClick={onclick}
 				key={"file-key-"+index}
 				data-id={index}
@@ -223,16 +231,18 @@ class Test extends React.Component {
 		});
 
 		function toggleRepeatAll() {
-			this.setState({repeatAll: !this.state.repeatAll});
+			parentPlaylist.setState({repeatAll: !parentPlaylist.state.repeatAll});
+			parentPlaylist.forceUpdate();
 		}
 		function toggleRepeatCurrent() {
-			this.setState({repeatCurrent: !this.state.repeatCurrent});
+			parentPlaylist.setState({repeatCurrent: !parentPlaylist.state.repeatCurrent});
+			parentPlaylist.forceUpdate();
 		}
 
 		return(
 			<div>
-				<button onClick={toggleRepeatAll}>Repeat all</button>
-				<button onClick={toggleRepeatCurrent}>Repeat current</button>
+				<button className={this.state.repeatAll ? "enabledButton" : ""} onClick={toggleRepeatAll}>Repeat all</button>
+				<button className={this.state.repeatCurrent ? "enabledButton" : ""} onClick={toggleRepeatCurrent}>Repeat current</button>
 				<ul ref="tracklist">
 					{files}
 				</ul>
@@ -241,4 +251,4 @@ class Test extends React.Component {
 
 	}
 }
-ReactDOM.render(<Test dropzone={window} />, document.getElementById("web-playlist-wrap"));
+ReactDOM.render(<WebPlaylist dropzone={window} />, document.getElementById("web-playlist-wrap"));
