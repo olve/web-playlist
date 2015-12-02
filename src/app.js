@@ -105,7 +105,13 @@ class WebPlaylist extends React.Component {
 						this.element = null;
 						this.playing = false;
 						let self = this;
+						function secondsToMinutes(number) {
+							let minutes = Math.floor(number / 60);
+							let seconds = number - minutes*60;
+							return `${minutes}:${Math.round(seconds)}`;
+						}
 						let onTimeUpdate = function() {
+							parentPlaylist.refs.timepos.textContent = secondsToMinutes(this.element.currentTime);
 							parentPlaylist.refs.seekbar.value = this.element.currentTime / this.element.duration;
 						}.bind(this);
 						let onSeekbarClick = function(event) {
@@ -118,6 +124,7 @@ class WebPlaylist extends React.Component {
 								this.element.pause();
 								this.element.currentTime = 0;
 								this.playing = false;
+								parentPlaylist.refs.timepos.textContent = "";
 
 								this.element.removeEventListener("timeupdate", onTimeUpdate);
 								parentPlaylist.refs.seekbar.removeEventListener("click", onSeekbarClick);
@@ -310,25 +317,31 @@ class WebPlaylist extends React.Component {
 		let playpause = null;
 
 		if (!activeTracks.length && this.state.pausedTrack === null) {
-			playpause = <button>Nothing playing...</button>
+			playpause = <button onClick={function() {parentPlaylist.playNextTrack();}}>Play</button>
 		}
 		else {
 			playpause = (this.state.pausedTrack !== null) ? <button onClick={playPaused}>Play</button> : <button onClick={pauseAll}>Pause</button>;
 		}
 
 		return(
-			<div>
-				<button className={this.state.repeatAll ? "enabledButton" : ""} onClick={toggleRepeatAll}>Repeat all</button>
-				<button className={this.state.repeatCurrent ? "enabledButton" : ""} onClick={toggleRepeatCurrent}>Repeat current</button>
-				<div>
+			<div className="web-playlist">
+
+				<ul className="tracklist" ref="tracklist">
+					{fileElements}
+				</ul>
+
+				<div className="controls">
 					<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}>Previous</button>
 					{playpause}
 					<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}>Next</button>
+
+					<button className={this.state.repeatAll ? "repeat-all-button enabledButton" : "repeat-all-button"} onClick={toggleRepeatAll}>Repeat all</button>
+					<button className={this.state.repeatCurrent ? "repeat-current-button enabledButton" : "repeat-current-button"} onClick={toggleRepeatCurrent}>Repeat current</button>
+
+					<progress ref="seekbar" value="0" max="1"></progress> 
+					<span ref="timepos"></span>
 				</div>
-				<progress ref="seekbar" value="0" max="1"></progress>
-				<ul ref="tracklist">
-					{fileElements}
-				</ul>
+
 			</div>
 		);
 
