@@ -104,11 +104,16 @@ class WebPlaylist extends React.Component {
 					audio: new function() {
 						this.element = null;
 						this.playing = false;
+						let onTimeUpdate = function() {
+							parentPlaylist.refs.seekbar.value = this.element.currentTime / this.element.duration;
+						}.bind(this);
 						this.stop = function() {
 							if (this.element !== null) {
 								this.element.pause();
 								this.element.currentTime = 0;
 								this.playing = false;
+
+								this.element.removeEventListener("timeupdate", onTimeUpdate);
 							}
 						};
 						this.play = function() {
@@ -116,6 +121,8 @@ class WebPlaylist extends React.Component {
 								this.element.play();
 								this.playing = true;
 								parentPlaylist.setState({pausedTrack: null});
+
+								this.element.addEventListener("timeupdate", onTimeUpdate);
 							}							
 						};
 						this.pause = function() {
@@ -309,6 +316,7 @@ class WebPlaylist extends React.Component {
 					{playpause}
 					<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}>Next</button>
 				</div>
+				<progress ref="seekbar" value="0" max="1"></progress>
 				<ul ref="tracklist">
 					{fileElements}
 				</ul>
