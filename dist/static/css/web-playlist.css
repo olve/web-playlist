@@ -14,7 +14,15 @@ body, #web-playlist-wrap, .web-playlist  {
 .playing {
 	color: blue;
 }
-
+.filedrop-prompt {
+	flex: 1;
+	align-self: center;
+	display: flex;
+	align-items: center;
+}
+.filedrop-prompt > i {
+	color: blue;
+}
 
 .controls {
   position: fixed;
@@ -41,13 +49,6 @@ progress {
 .controls-secondary {
   display: flex;
   justify-content: center;
-}
-
-.enabledButton {
-	border: 2px solid blue;
-}
-.disabledButton {
-	border: 2px solid red;
 }
 
 ul {

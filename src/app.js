@@ -259,7 +259,12 @@ class WebPlaylist extends React.Component {
 	}
 	render = () => {
 		if (!this.state.files.length) {
-			return <p>Drop music!</p>;
+			return (
+				<div className="filedrop-prompt">
+					<i className="mdi mdi-file-music"></i>
+					Drag & Drop some music here!
+				</div>
+			);
 		}
 
 		let parentPlaylist = this;
