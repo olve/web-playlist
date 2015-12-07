@@ -35,6 +35,9 @@ li > i {
 li:hover {
 	background: #aaa;
 }
+.inactive {
+	color: red;
+}
 .filedrop-prompt > i {
 	color: blue;
 }

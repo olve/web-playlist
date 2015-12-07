@@ -374,12 +374,12 @@ class WebPlaylist extends React.Component {
 			playpauseButton = (this.state.pausedTrack !== null) ? <button onClick={function() {parentPlaylist.playFile(parentPlaylist.state.pausedTrack);}}><i className="mdi mdi-play"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause"></i></button>;
 		}
 
-		let repeatButtonText = <i className="mdi mdi-repeat-off"></i>
+		let repeatButtonIcon = <i className="mdi mdi-repeat inactive"></i>
 		if (this.state.repeatAll) {
-			repeatButtonText = <i className="mdi mdi-repeat"></i>
+			repeatButtonIcon = <i className="mdi mdi-repeat"></i>
 		}
 		else if (this.state.repeatCurrent) {
-			repeatButtonText = <i className="mdi mdi-repeat-once"></i>
+			repeatButtonIcon = <i className="mdi mdi-repeat-once"></i>
 		}
 
 		function getSpeakerIcon() {
@@ -394,10 +394,6 @@ class WebPlaylist extends React.Component {
 			}
 			return "mdi-volume-off";
 		}
-		function getShuffleIcon() {
-			return (parentPlaylist.state.shuffle) ? <i className="mdi mdi-shuffle"></i> : <span>-No-shuffle icon does not exist-</span>;
-		}
-
 
 		return(
 			<div className="web-playlist">
@@ -416,8 +412,8 @@ class WebPlaylist extends React.Component {
 					<div className="controls-secondary">
 						<progress className="seekbar" ref="seekBar" value="0" max="1"></progress> 
 						<span className="timepos" ref="timepos">0:00</span>
-						<button className="repeat-button" onClick={parentPlaylist.toggleRepeat}>{repeatButtonText}</button>
-						<button className="shuffle-button" onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}>{getShuffleIcon()}</button>
+						<button className="repeat-button" onClick={parentPlaylist.toggleRepeat}>{repeatButtonIcon}</button>
+						<button className="shuffle-button" onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}> <i className={"mdi mdi-shuffle"+((parentPlaylist.state.shuffle) ? "" : " inactive")}></i> </button>
 
 						<div className="controls-volume">
 							<progress className="volumebar" onClick={function(event) {parentPlaylist.setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
