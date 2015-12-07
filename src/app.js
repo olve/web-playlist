@@ -1,4 +1,4 @@
-const WORKER_FILEREADER = "./FileReaderSync_worker.js";
+const WORKER_FILEREADER = "static/js/FileReaderSync_worker.js";
 
 function eventContainsFiles(event) {
 	if (event.dataTransfer.types) {
@@ -23,6 +23,8 @@ class WebPlaylist extends React.Component {
 			repeatAll: true,
 			repeatCurrent: false,
 			pausedTrack: null,
+			volume: 1,
+			mutedVolume: 0, //sound-level to return to after unmuting. The volume was at this level when the player was muted.
 		}
 	}
 	cancelEvent(event) {
@@ -111,12 +113,12 @@ class WebPlaylist extends React.Component {
 						}
 						let onTimeUpdate = function() {
 							parentPlaylist.refs.timepos.textContent = secondsToPaddedMinutes(this.element.currentTime);
-							parentPlaylist.refs.seekbar.value = this.element.currentTime / this.element.duration;
+							parentPlaylist.refs.seekBar.value = this.element.currentTime / this.element.duration;
 						}.bind(this);
-						let onSeekbarClick = function(event) {
+						let onSeekBarClick = function(event) {
 							let percentage = event.offsetX / this.offsetWidth;
 							self.element.currentTime = percentage * self.element.duration;
-							parentPlaylist.refs.seekbar.value = percentage / 100;
+							parentPlaylist.refs.seekBar.value = percentage / 100;
 						};
 						this.stop = function() {
 							if (this.element !== null) {
@@ -126,7 +128,7 @@ class WebPlaylist extends React.Component {
 								parentPlaylist.refs.timepos.textContent = "";
 
 								this.element.removeEventListener("timeupdate", onTimeUpdate);
-								parentPlaylist.refs.seekbar.removeEventListener("click", onSeekbarClick);
+								parentPlaylist.refs.seekBar.removeEventListener("click", onSeekBarClick);
 							}
 						};
 						this.play = function() {
@@ -136,7 +138,8 @@ class WebPlaylist extends React.Component {
 								parentPlaylist.setState({pausedTrack: null});
 
 								this.element.addEventListener("timeupdate", onTimeUpdate);
-								parentPlaylist.refs.seekbar.addEventListener("click", onSeekbarClick);
+								parentPlaylist.refs.seekBar.addEventListener("click", onSeekBarClick);
+
 							}							
 						};
 						this.pause = function() {
@@ -151,10 +154,11 @@ class WebPlaylist extends React.Component {
 						if (this.buffer !== null) {
 							let blob = new Blob([this.buffer], {type: this.data.type});
 							this.audio.element = new Audio([URL.createObjectURL(blob)]);
+							this.audio.element.volume = parentPlaylist.state.volume;
 							this.audio.element.addEventListener("ended", function() {
 								this.playing = false;
 								parentPlaylist.playNextTrack(this);
-								parentPlaylist.refs.seekbar.value = 0;
+								parentPlaylist.refs.seekBar.value = 0;
 							}.bind(this));
 
 							if (playWhenReady) {
@@ -348,6 +352,41 @@ class WebPlaylist extends React.Component {
 			repeatButtonText = <i className="mdi mdi-repeat-once"></i>
 		}
 
+
+		function setVolume(volume) {
+			parentPlaylist.refs.volumeBar.value = volume;
+			parentPlaylist.state.files.forEach(file => {
+				if (file.audio.element !== null) {
+					file.audio.element.volume = volume;
+				}
+			});
+			parentPlaylist.setState({volume: volume});
+		}
+
+		function getSpeakerIcon() {
+			if (parentPlaylist.state.volume > 0.5) {
+				return "mdi-volume-high";
+			}
+			if (parentPlaylist.state.volume > 0.25) {
+				return "mdi-volume-medium";
+			}
+			if (parentPlaylist.state.volume > 0) {
+				return "mdi-volume-low";
+			}
+			return "mdi-volume-off";
+		}
+		function toggleMute() {
+			if (parentPlaylist.state.volume > 0) {
+				parentPlaylist.setState({
+					mutedVolume: parentPlaylist.state.volume,
+				});
+				setVolume(0);
+			}
+			else {
+				setVolume(parentPlaylist.state.mutedVolume);
+			}
+		}
+
 		return(
 			<div className="web-playlist">
 
@@ -363,9 +402,14 @@ class WebPlaylist extends React.Component {
 					</div>
 
 					<div className="controls-secondary">
-						<progress ref="seekbar" value="0" max="1"></progress> 
+						<progress className="seekbar" ref="seekBar" value="0" max="1"></progress> 
 						<span className="timepos" ref="timepos"></span>
 						<button className="repeat-button" onClick={toggleRepeat}>{repeatButtonText}</button>
+
+						<div className="controls-volume">
+							<progress className="volumebar" onClick={function(event) {setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
+							<button className="toggle-mute-button" onClick={toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
+						</div>
 					</div>
 				</div>
 

@@ -23,7 +23,10 @@ body, #web-playlist-wrap, .web-playlist  {
 .filedrop-prompt > i {
 	color: blue;
 }
-
+.controls-volume {
+	margin-left: 2.5%;
+	max-width: 20%;
+}
 .controls {
   position: fixed;
   bottom: 0;

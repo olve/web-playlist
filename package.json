@@ -23,5 +23,5 @@
     "mdi": "^1.3.41"
 
   },
-  "//": "browserify src/app.js --debug -t babelify > dist/app.js"
+  "//": "browserify src/app.js --debug -t babelify > dist/static/js/app.js"
 }
