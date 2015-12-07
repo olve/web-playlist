@@ -32,6 +32,9 @@ li {
 li > i {
 	cursor: pointer;
 }
+li:hover {
+	background: #aaa;
+}
 .filedrop-prompt > i {
 	color: blue;
 }

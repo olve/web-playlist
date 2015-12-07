@@ -47,7 +47,7 @@ class WebPlaylist extends React.Component {
 		event.dataTransfer.setData("text/html", event.currentTarget);
 	}
 	dragEnd = (event) => {
-		this.dragged.style.display = "block";
+		this.dragged.style.display = "flex";
 		this.dragged.parentNode.removeChild(placeholderLi);
 
 		let files = this.state.files;
