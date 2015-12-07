@@ -24,7 +24,8 @@ class WebPlaylist extends React.Component {
 			repeatCurrent: false,
 			pausedTrack: null,
 			volume: 1,
-			mutedVolume: 0, //sound-level to return to after unmuting. The volume was at this level when the player was muted.
+			mutedVolume: 1, //sound-level to return to after unmuting. The volume was at this level when the player was muted.
+			shuffle: false,
 		}
 	}
 	cancelEvent(event) {
@@ -205,6 +206,12 @@ class WebPlaylist extends React.Component {
 	}
 	playNextTrack = (current) => {
 		let files = this.state.files;
+
+		if (this.state.shuffle) {
+			//consider adding a play queue, so we can generate a shuffled playlist (Fisher-Yates shuffle). This will let back/next step through the shuffled list
+			return this.playFile(files[Math.floor(Math.random() * files.length)])
+		}
+
 		if (!current) {
 			if (files.length) {
 				return this.playFile(files[0]);
@@ -261,7 +268,62 @@ class WebPlaylist extends React.Component {
 		}
 		this.forceUpdate();
 	}
+	removeFile = (fileToRemove) => {
+		let files = this.state.files;
+
+		files.splice(fileToRemove.index, 1);
+		fileToRemove.audio.stop();
+		fileToRemove.audio.element = null;
+		fileToRemove.buffer = null;
+
+		files.forEach((file, index) => {
+			file.index = index;
+		});
+
+		this.setState({files: files});
+	}
+	toggleRepeat = () => {
+		if (this.state.repeatAll) {
+			this.setState({
+				repeatAll: false,
+				repeatCurrent: true,
+			})
+		}
+		else if (this.state.repeatCurrent) {
+			this.setState({
+				repeatAll: false,
+				repeatCurrent: false,
+			})
+		}
+		else if (!this.state.repeatAll && !this.state.repeatCurrent) {
+			this.setState({
+				repeatAll: true,
+				repeatCurrent: false,
+			})
+		}
+	}
+	setVolume = (volume) => {
+		this.refs.volumeBar.value = volume;
+		this.state.files.forEach(file => {
+			if (file.audio.element !== null) {
+				file.audio.element.volume = volume;
+			}
+		});
+		this.setState({volume: volume});
+	}
+	toggleMute = () => {
+		if (this.state.volume > 0) {
+			this.setState({
+				mutedVolume: this.state.volume,
+			});
+			this.setVolume(0);
+		}
+		else {
+			this.setVolume(this.state.mutedVolume);
+		}
+	}
 	render = () => {
+
 		if (!this.state.files.length) {
 			return (
 				<div className="filedrop-prompt">
@@ -273,21 +335,19 @@ class WebPlaylist extends React.Component {
 
 		let parentPlaylist = this;
 
-		let fileElements = this.state.files.map((file, index) => {
-			function onclick() {
-				parentPlaylist.playFile(file);
-			}
-
+		let tracks = this.state.files.map((file, index) => {
 			return <li 
 				className={file.audio.playing ? "playing" : ""}
-				onClick={onclick}
 				key={"file-key-"+index}
 				data-id={index}
 				draggable="true"
 				onDragEnd={parentPlaylist.dragEnd}
 				onDragStart={parentPlaylist.dragStart}
 			>
-				{file.data.name}
+				<div className="track-wrap" onClick={function() {parentPlaylist.playFile(file);}}>
+					<span>{file.data.name}</span>
+				</div>
+				<i onClick={function(){parentPlaylist.removeFile(file);}} className="mdi mdi-playlist-remove"></i>
 			</li>
 		});
 
@@ -295,72 +355,31 @@ class WebPlaylist extends React.Component {
 			if (file.audio.playing) {
 				return file;
 			}
-		}).filter(listItem => (listItem));
+		}).filter(listItem => (listItem)); //if !file.audio.playing, listItem will be undefined and must be filtered out.
 
 		let currentTrack = activeTracks.length ? activeTracks[0] : null;
 
 		function pauseAll() {
 			if (activeTracks.length) {
+				activeTracks.forEach(file => file.audio.pause());
 				parentPlaylist.setState({pausedTrack: activeTracks[0]});
-				activeTracks.forEach(file => {
-					file.audio.pause()
-				});
-				parentPlaylist.forceUpdate();
 			}
 		}
-		function playPaused() {
-			parentPlaylist.playFile(parentPlaylist.state.pausedTrack);
-		}
 
-		let playpause = null;
+		let playpauseButton = null;
 		if (!activeTracks.length && this.state.pausedTrack === null) {
-			playpause = <button onClick={function() {parentPlaylist.playNextTrack();}}><i className="mdi mdi-play"></i></button>
+			playpauseButton = <button onClick={function() {parentPlaylist.playNextTrack();}}><i className="mdi mdi-play"></i></button>
 		}
 		else {
-			playpause = (this.state.pausedTrack !== null) ? <button onClick={playPaused}><i className="mdi mdi-play"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause"></i></button>;
+			playpauseButton = (this.state.pausedTrack !== null) ? <button onClick={function() {parentPlaylist.playFile(parentPlaylist.state.pausedTrack);}}><i className="mdi mdi-play"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause"></i></button>;
 		}
 
-		let toggleRepeat = function() {
-			if (this.state.repeatAll) {
-				this.setState({
-					repeatAll: false,
-					repeatCurrent: true,
-				})
-			}
-			else if (this.state.repeatCurrent) {
-				this.setState({
-					repeatAll: false,
-					repeatCurrent: false,
-				})
-			}
-			else if (!this.state.repeatAll && !this.state.repeatCurrent) {
-				this.setState({
-					repeatAll: true,
-					repeatCurrent: false,
-				})
-			}
-		}.bind(this);
-
-		//let repeatButtonText = "No repeat";
 		let repeatButtonText = <i className="mdi mdi-repeat-off"></i>
 		if (this.state.repeatAll) {
-			//repeatButtonText = "Repeating all";
 			repeatButtonText = <i className="mdi mdi-repeat"></i>
 		}
 		else if (this.state.repeatCurrent) {
-			//repeatButtonText = "Repeating current";
 			repeatButtonText = <i className="mdi mdi-repeat-once"></i>
-		}
-
-
-		function setVolume(volume) {
-			parentPlaylist.refs.volumeBar.value = volume;
-			parentPlaylist.state.files.forEach(file => {
-				if (file.audio.element !== null) {
-					file.audio.element.volume = volume;
-				}
-			});
-			parentPlaylist.setState({volume: volume});
 		}
 
 		function getSpeakerIcon() {
@@ -375,40 +394,34 @@ class WebPlaylist extends React.Component {
 			}
 			return "mdi-volume-off";
 		}
-		function toggleMute() {
-			if (parentPlaylist.state.volume > 0) {
-				parentPlaylist.setState({
-					mutedVolume: parentPlaylist.state.volume,
-				});
-				setVolume(0);
-			}
-			else {
-				setVolume(parentPlaylist.state.mutedVolume);
-			}
+		function getShuffleIcon() {
+			return (parentPlaylist.state.shuffle) ? <i className="mdi mdi-shuffle"></i> : <span>-No-shuffle icon does not exist-</span>;
 		}
+
 
 		return(
 			<div className="web-playlist">
 
 				<ul className="tracklist" ref="tracklist">
-					{fileElements}
+					{tracks}
 				</ul>
 
 				<div className="controls">
 					<div className="controls-playback">
 						<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}><i className="mdi mdi-skip-previous"></i></button>
-						{playpause}
+						{playpauseButton}
 						<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}><i className="mdi mdi-skip-next"></i></button>
 					</div>
 
 					<div className="controls-secondary">
 						<progress className="seekbar" ref="seekBar" value="0" max="1"></progress> 
-						<span className="timepos" ref="timepos"></span>
-						<button className="repeat-button" onClick={toggleRepeat}>{repeatButtonText}</button>
+						<span className="timepos" ref="timepos">0:00</span>
+						<button className="repeat-button" onClick={parentPlaylist.toggleRepeat}>{repeatButtonText}</button>
+						<button className="shuffle-button" onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}>{getShuffleIcon()}</button>
 
 						<div className="controls-volume">
-							<progress className="volumebar" onClick={function(event) {setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
-							<button className="toggle-mute-button" onClick={toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
+							<progress className="volumebar" onClick={function(event) {parentPlaylist.setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
+							<button className="toggle-mute-button" onClick={parentPlaylist.toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
 						</div>
 					</div>
 				</div>

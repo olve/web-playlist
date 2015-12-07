@@ -20,12 +20,25 @@ body, #web-playlist-wrap, .web-playlist  {
 	display: flex;
 	align-items: center;
 }
+li {
+	display: flex;
+	justify-content: space-between;
+}
+.track-wrap {
+	width: 100%;
+	cursor: pointer;
+	align-self: flex-start;
+}
+li > i {
+	cursor: pointer;
+}
 .filedrop-prompt > i {
 	color: blue;
 }
 .controls-volume {
 	max-width: 20%;
 	display: flex;
+	margin-left: 5px;
 	align-items: center;
 }
 .controls {
@@ -37,13 +50,14 @@ body, #web-playlist-wrap, .web-playlist  {
   justify-content: center;
   flex-direction: column;
   height: 65px;
+  padding: 0 10px;
 }
 .controls-playback {
   display: flex;
   justify-content: center;
 }
 .seekbar {
-  width: 100%;
+  width: 75%;
   margin-right: 9px;
   align-self: center;
 }
@@ -63,7 +77,6 @@ ul {
 li {
   padding: 5px;
   background:#eee;
-  cursor: pointer;
 }
 
 li.placeholder {background: rgb(255,240,120);}
