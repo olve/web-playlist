@@ -1,5 +1,6 @@
 html {
 	font-family: "Roboto", arial, sans-serif;
+	overflow: hidden;
 }
 html, body {
 	margin: 0;
@@ -13,10 +14,7 @@ body, #web-playlist-wrap, .web-playlist  {
 button {
 	cursor: pointer;
 }
-.tracklist {
-	flex: 1;
-	margin-bottom: 125px;
-}
+
 
 /* timepos
 ================================================ */
@@ -164,9 +162,23 @@ progress {
 .filedrop-prompt > i {
 	margin-right: 20px;
 }
-
+.tracklist {
+	flex: 1;
+	background: #fff;
+}
+.web-playlist {
+	background: #f5f5f5;
+}
+.tracklist-wrap {
+	border-radius: 2px;
+	box-shadow: 0 1px 4px 0 rgba(0,0,0,0.37);
+	background: #fff;
+	margin: 10px 10px 118px 10px;
+	padding: 10px;
+	min-height: 100vh;
+}
 li {
-	padding: 0 10px;
+	padding: 0 5px;
 	color: #61616;
 	display: flex;
 	justify-content: space-between;

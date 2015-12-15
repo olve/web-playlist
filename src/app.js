@@ -398,9 +398,11 @@ class WebPlaylist extends React.Component {
 		return(
 			<div className="web-playlist">
 
-				<ul className="tracklist" ref="tracklist">
-					{tracks}
-				</ul>
+				<div className="tracklist-wrap">
+					<ul className="tracklist" ref="tracklist">
+						{tracks}
+					</ul>
+				</div>
 
 
 				<div className="seekbar-wrap">
