@@ -171,6 +171,7 @@ progress {
 .tracklist {
 	flex: 1;
 	background: #fff;
+	margin-top: 10px;
 }
 .web-playlist {
 	background: #f5f5f5;
