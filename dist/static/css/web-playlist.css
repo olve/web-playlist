@@ -78,7 +78,9 @@ progress {
   background: rgba(0,0,0,0);
   border: none;
   color: red;
-  cursor: pointer;	
+  cursor: pointer;
+  -webkit-appearance: none;
+  border: none;	
 }
 /* seekbar
 ================================================ */
@@ -88,8 +90,11 @@ progress {
 .seekbar::-moz-progress-bar {
 	background: #E64A19;
 }
-.seekbar::-webkit-progress-bar {
+.seekbar::-webkit-progress-value {
 	background: #E64A19;
+}
+.seekbar::-webkit-progress-bar {
+	background: transparent;
 }
 .seekbar-wrap {
 	width: 100%;
@@ -107,8 +112,11 @@ progress {
 .volumebar::-moz-progress-bar {
 	background: #E64A19;
 }
+.volumebar::-webkit-progress-value {
+	background-color: #E64A19;
+}
 .volumebar::-webkit-progress-bar {
-	background: #E64A19;
+	background: #e0e0e0;
 }
 
 /* controls-playback
