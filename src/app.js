@@ -347,7 +347,7 @@ class WebPlaylist extends React.Component {
 				<div className="track-wrap" onClick={function() {parentPlaylist.playFile(file);}}>
 					<span>{file.data.name}</span>
 				</div>
-				<i onClick={function(){parentPlaylist.removeFile(file);}} className="mdi mdi-playlist-remove"></i>
+				<i alt="remove from playlist" title="remove from playlist" onClick={function(){parentPlaylist.removeFile(file);}} className="mdi mdi-playlist-remove remove-from-playlist-button"></i>
 			</li>
 		});
 
@@ -368,18 +368,18 @@ class WebPlaylist extends React.Component {
 
 		let playpauseButton = null;
 		if (!activeTracks.length && this.state.pausedTrack === null) {
-			playpauseButton = <button onClick={function() {parentPlaylist.playNextTrack();}}><i className="mdi mdi-play"></i></button>
+			playpauseButton = <button onClick={function() {parentPlaylist.playNextTrack();}}><i className="mdi mdi-play-circle playpause"></i></button>
 		}
 		else {
-			playpauseButton = (this.state.pausedTrack !== null) ? <button onClick={function() {parentPlaylist.playFile(parentPlaylist.state.pausedTrack);}}><i className="mdi mdi-play"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause"></i></button>;
+			playpauseButton = (this.state.pausedTrack !== null) ? <button onClick={function() {parentPlaylist.playFile(parentPlaylist.state.pausedTrack);}}><i className="mdi mdi-play-circle playpause"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause-circle playpause"></i></button>;
 		}
 
-		let repeatButtonIcon = <i className="mdi mdi-repeat inactive"></i>
+		let repeatButton = <button alt="repeat is off" title="repeat is off" className="repeat-button" onClick={parentPlaylist.toggleRepeat}><i className="mdi mdi-repeat inactive"></i></button>;
 		if (this.state.repeatAll) {
-			repeatButtonIcon = <i className="mdi mdi-repeat"></i>
+			repeatButton = <button alt="repeat is on" title="repeat is on" className="repeat-button" onClick={parentPlaylist.toggleRepeat}><i className="mdi mdi-repeat"></i></button>;
 		}
 		else if (this.state.repeatCurrent) {
-			repeatButtonIcon = <i className="mdi mdi-repeat-once"></i>
+			repeatButton = <button alt="repeating current" title="repeating current" className="repeat-button" onClick={parentPlaylist.toggleRepeat}><i className="mdi mdi-repeat-once"></i></button>;
 		}
 
 		function getSpeakerIcon() {
@@ -402,24 +402,32 @@ class WebPlaylist extends React.Component {
 					{tracks}
 				</ul>
 
+
+				<div className="seekbar-wrap">
+					<progress className="seekbar" ref="seekBar" value="0" max="1"></progress> 
+				</div>
+
 				<div className="controls">
+
+					<div className="timepos-wrap">
+						<span className="timepos" ref="timepos">0:00</span>
+					</div>
+
+
 					<div className="controls-playback">
+						{repeatButton}
 						<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}><i className="mdi mdi-skip-previous"></i></button>
 						{playpauseButton}
 						<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}><i className="mdi mdi-skip-next"></i></button>
+						<button alt="toggle shuffle" title="toggle shuffle" className="shuffle-button" onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}> <i className={"mdi mdi-shuffle"+((parentPlaylist.state.shuffle) ? "" : " inactive")}></i> </button>
 					</div>
 
-					<div className="controls-secondary">
-						<progress className="seekbar" ref="seekBar" value="0" max="1"></progress> 
-						<span className="timepos" ref="timepos">0:00</span>
-						<button className="repeat-button" onClick={parentPlaylist.toggleRepeat}>{repeatButtonIcon}</button>
-						<button className="shuffle-button" onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}> <i className={"mdi mdi-shuffle"+((parentPlaylist.state.shuffle) ? "" : " inactive")}></i> </button>
+					<div className="controls-volume">
+						<progress className="volumebar" onClick={function(event) {parentPlaylist.setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
+						<button alt="toggle mute" title="toggle mute" className="toggle-mute-button" onClick={parentPlaylist.toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
+					</div>		
 
-						<div className="controls-volume">
-							<progress className="volumebar" onClick={function(event) {parentPlaylist.setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
-							<button className="toggle-mute-button" onClick={parentPlaylist.toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
-						</div>
-					</div>
+
 				</div>
 
 			</div>
