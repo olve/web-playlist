@@ -202,14 +202,10 @@ li:hover {
 }
 .remove-from-playlist-button {
 	color: #999;
-	padding: 4px;
 	transition: color 100ms ease-in-out;	
 }
 .remove-from-playlist-button:hover {
 	color: #000;
-	border: 1px solid #000;
-	border-radius: 50%;
-	padding: 3px;
 }
 
 
