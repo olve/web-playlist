@@ -52,7 +52,6 @@ button {
   align-self: center;
 }
 .controls-volume {
-	max-width: 20%;
 	display: flex;
 	align-items: center;
 	align-self: flex-end;
@@ -141,6 +140,7 @@ progress {
 }
 .volumebar-wrap {
 	height: 10px;
+	width: 125px;
 	padding-top: 3px;
 	cursor: pointer;
 }
