@@ -67,6 +67,27 @@ button {
 .toggle-mute-button > i {
 	font-size: 18px;
 }
+.controls-playback > button {
+	background: none;
+	outline: none;
+	border: none;
+}
+.controls-playback > button > i {
+	font-size: 25px;
+}
+.playpause {
+	font-size: 64px !important;
+	color: #E64A19 !important;
+}
+.repeat-button > i {
+	color: #E64A19;
+}
+.shuffle-button > i {
+	color: #E64A19;
+}
+.inactive {
+	color: #000 !important;
+}
 
 
 /* progress-bars
@@ -105,14 +126,23 @@ progress {
 	background: rgba(0,0,0,0.03);
 }
 .seekbar::-webkit-progress-bar:hover {
-	background: rgba(0,0,0,0.03);
-}
+	background: rgba(0,0,0,0.03);}
+
 
 /* volumebar
 ================================================= */
 .volumebar {
 	background: #e0e0e0;
-	height: 2px;
+	width: 100%;
+}
+.volumebar-height-wrap {
+	height: 5px;
+	overflow: hidden;
+}
+.volumebar-wrap {
+	height: 10px;
+	padding-top: 3px;
+	cursor: pointer;
 }
 .volumebar::-moz-progress-bar {
 	background: #E64A19;
@@ -124,29 +154,6 @@ progress {
 	background: #e0e0e0;
 }
 
-/* controls-playback
-================================================= */
-.controls-playback > button {
-	background: none;
-	outline: none;
-	border: none;
-}
-.controls-playback > button > i {
-	font-size: 25px;
-}
-.playpause {
-	font-size: 64px !important;
-	color: #E64A19 !important;
-}
-.repeat-button > i {
-	color: #E64A19;
-}
-.shuffle-button > i {
-	color: #E64A19;
-}
-.inactive {
-	color: #000 !important;
-}
 /*=================================================================================================================== */
 
 

@@ -328,7 +328,7 @@ class WebPlaylist extends React.Component {
 			return (
 				<div className="filedrop-prompt">
 					<i className="mdi mdi-file-music"></i>
-					<span>Drag & Drop some music here!</span>
+					<span>Drag & Drop a bunch of mp3s here!</span>
 				</div>
 			);
 		}
@@ -425,7 +425,11 @@ class WebPlaylist extends React.Component {
 					</div>
 
 					<div className="controls-volume">
-						<progress className="volumebar" onClick={function(event) {parentPlaylist.setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}} ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
+						<div className="volumebar-wrap" onClick={function(event) {parentPlaylist.setVolume((event.pageX - event.target.offsetLeft) / event.target.offsetWidth);}}>
+							<div className="volumebar-height-wrap">
+								<progress className="volumebar" ref="volumeBar" value={parentPlaylist.state.volume} max="1"></progress>
+							</div>
+						</div>
 						<button alt="toggle mute" title="toggle mute" className="toggle-mute-button" onClick={parentPlaylist.toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
 					</div>		
 
