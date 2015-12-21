@@ -186,6 +186,30 @@ class WebPlaylist extends React.Component {
 			}
 		}
 	}
+	keyDown = (event) => {
+		if (event.keyCode === 32) { //spacebar
+			this.cancelEvent(event);
+			return false;
+		}
+	}
+	keyUp = (event) => {
+		if (event.keyCode === 32) { //spacebar
+			if (!this.state.files.length) return event;
+			this.cancelEvent(event);
+			if (this.state.currentTrack === null) {
+				this.playNextTrack();
+			}
+			else {
+				if (this.state.currentTrack.audio.paused) {
+					this.playFile(this.state.currentTrack);
+				}
+				else {
+					this.pauseCurrent();
+				}
+			}
+			return false;
+		}
+	}
 	componentDidMount = () => {
 		let dropzone = this.props.dropzone;
 		if (dropzone) {
@@ -193,6 +217,8 @@ class WebPlaylist extends React.Component {
 			dropzone.addEventListener("dragover", this.dragOver, false);
 			dropzone.addEventListener("dragleave", this.dragLeave, false);
 			dropzone.addEventListener("drop", this.drop, false);
+			dropzone.addEventListener("keydown", this.keyDown, false);
+			dropzone.addEventListener("keyup", this.keyUp, false);
 		}
 	}
 	componentWillUnmount = () => {
@@ -202,6 +228,8 @@ class WebPlaylist extends React.Component {
 			dropzone.removeEventListener("dragover", this.dragOver, false);
 			dropzone.removeEventListener("dragleave", this.dragLeave, false);
 			dropzone.removeEventListener("drop", this.drop, false);
+			dropzone.removeEventListener("keydown", this.keyDown, false);
+			dropzone.removeEventListener("keyup", this.keyUp, false);
 		}
 	}
 	playNextTrack = (current) => {
@@ -251,15 +279,15 @@ class WebPlaylist extends React.Component {
 	}
 	playFile = (fileToPlay) => {
 		if (!fileToPlay) return;
-		if (fileToPlay === this.state.currentTrack && fileToPlay.audio.paused) {
+		if (fileToPlay === this.state.currentTrack && fileToPlay.audio.playing && fileToPlay.audio.paused) {
 			fileToPlay.audio.play();
+			this.forceUpdate();
 		}
 		else {
-			for (let file of this.state.files) {
-				file.audio.stop();
+			if (this.state.currentTrack !== null) {
+				this.state.currentTrack.audio.stop();
+				this.setState({currentTrack: null});
 			}
-			this.setState({currentTrack: null});
-
 			if (fileToPlay.audio.element !== null) {
 				fileToPlay.audio.play();
 				this.setState({currentTrack: fileToPlay});
@@ -268,7 +296,6 @@ class WebPlaylist extends React.Component {
 				fileToPlay.read(true);
 			}
 		}
-		this.forceUpdate();
 	}
 	pauseCurrent = () => {
 		if (this.state.currentTrack !== null) {
