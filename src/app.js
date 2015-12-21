@@ -22,7 +22,7 @@ class WebPlaylist extends React.Component {
 			files: [],
 			repeatAll: true,
 			repeatCurrent: false,
-			pausedTrack: null,
+			currentTrack: null,
 			volume: 1,
 			mutedVolume: 1, //sound-level to return to after unmuting. The volume was at this level when the player was muted.
 			shuffle: false,
@@ -136,16 +136,16 @@ class WebPlaylist extends React.Component {
 							if (this.element !== null) {
 								this.element.play();
 								this.playing = true;
-								parentPlaylist.setState({pausedTrack: null});
+								this.paused = false;
 
 								this.element.addEventListener("timeupdate", onTimeUpdate);
 								parentPlaylist.refs.seekBar.addEventListener("click", onSeekBarClick);
-
 							}							
 						};
 						this.pause = function() {
 							if (this.element !== null) {
 								this.element.pause();
+								this.paused = true;
 							}							
 						};
 					},
@@ -251,22 +251,30 @@ class WebPlaylist extends React.Component {
 	}
 	playFile = (fileToPlay) => {
 		if (!fileToPlay) return;
-		if (this.state.pausedTrack === fileToPlay) {
+		if (fileToPlay === this.state.currentTrack && fileToPlay.audio.paused) {
 			fileToPlay.audio.play();
-			this.setState({pausedTrack: null});
 		}
 		else {
 			for (let file of this.state.files) {
 				file.audio.stop();
 			}
+			this.setState({currentTrack: null});
+
 			if (fileToPlay.audio.element !== null) {
 				fileToPlay.audio.play();
+				this.setState({currentTrack: fileToPlay});
 			}
 			else {
 				fileToPlay.read(true);
 			}
 		}
 		this.forceUpdate();
+	}
+	pauseCurrent = () => {
+		if (this.state.currentTrack !== null) {
+			this.state.currentTrack.audio.pause();
+			this.forceUpdate();
+		}
 	}
 	removeFile = (fileToRemove) => {
 		let files = this.state.files;
@@ -351,27 +359,17 @@ class WebPlaylist extends React.Component {
 			</li>
 		});
 
-		let activeTracks = this.state.files.map(file => {
-			if (file.audio.playing) {
-				return file;
-			}
-		}).filter(listItem => (listItem)); //if !file.audio.playing, listItem will be undefined and must be filtered out.
-
-		let currentTrack = activeTracks.length ? activeTracks[0] : null;
-
-		function pauseAll() {
-			if (activeTracks.length) {
-				activeTracks.forEach(file => file.audio.pause());
-				parentPlaylist.setState({pausedTrack: activeTracks[0]});
-			}
-		}
-
 		let playpauseButton = null;
-		if (!activeTracks.length && this.state.pausedTrack === null) {
+		if (this.state.currentTrack === null) {
 			playpauseButton = <button onClick={function() {parentPlaylist.playNextTrack();}}><i className="mdi mdi-play-circle playpause"></i></button>
 		}
 		else {
-			playpauseButton = (this.state.pausedTrack !== null) ? <button onClick={function() {parentPlaylist.playFile(parentPlaylist.state.pausedTrack);}}><i className="mdi mdi-play-circle playpause"></i></button> : <button onClick={pauseAll}><i className="mdi mdi-pause-circle playpause"></i></button>;
+			if (this.state.currentTrack.audio.paused) {
+				playpauseButton = <button onClick={function() {parentPlaylist.playFile(parentPlaylist.state.currentTrack);}}><i className="mdi mdi-play-circle playpause"></i></button>;	
+			}
+			else {
+				playpauseButton = <button onClick={parentPlaylist.pauseCurrent}><i className="mdi mdi-pause-circle playpause"></i></button>;
+			}
 		}
 
 		let repeatButton = <button alt="repeat is off" title="repeat is off" className="repeat-button" onClick={parentPlaylist.toggleRepeat}><i className="mdi mdi-repeat inactive"></i></button>;
@@ -415,12 +413,11 @@ class WebPlaylist extends React.Component {
 						<span className="timepos" ref="timepos">0:00</span>
 					</div>
 
-
 					<div className="controls-playback">
 						{repeatButton}
-						<button onClick={function(){parentPlaylist.playPrevTrack(currentTrack)}}><i className="mdi mdi-skip-previous"></i></button>
+						<button onClick={function(){parentPlaylist.playPrevTrack(parentPlaylist.state.currentTrack)}}><i className="mdi mdi-skip-previous"></i></button>
 						{playpauseButton}
-						<button onClick={function(){parentPlaylist.playNextTrack(currentTrack)}}><i className="mdi mdi-skip-next"></i></button>
+						<button onClick={function(){parentPlaylist.playNextTrack(parentPlaylist.state.currentTrack)}}><i className="mdi mdi-skip-next"></i></button>
 						<button alt="toggle shuffle" title="toggle shuffle" className="shuffle-button" onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}> <i className={"mdi mdi-shuffle"+((parentPlaylist.state.shuffle) ? "" : " inactive")}></i> </button>
 					</div>
 
