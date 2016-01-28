@@ -8,7 +8,7 @@ function eventContainsFiles(event) {
             }
         }
 	}
-    return false;			
+    return false;
 }
 
 let placeholderLi = document.createElement("li");
@@ -40,12 +40,12 @@ class WebPlaylist extends React.Component {
 		else {
 			return event;
 		}
-	}
+	};
 	dragStart = (event) => {
 		this.dragged = event.currentTarget;
 		event.dataTransfer.effectAllowed = "move";
 		event.dataTransfer.setData("text/html", event.currentTarget);
-	}
+	};
 	dragEnd = (event) => {
 		this.dragged.style.display = "flex";
 		this.dragged.parentNode.removeChild(placeholderLi);
@@ -61,7 +61,7 @@ class WebPlaylist extends React.Component {
 		});
 
 		this.setState({files: files});
-	}
+	};
 	dragOver = (event) => {
 		if (eventContainsFiles(event)) {
 			return this.cancelEvent(event);;
@@ -87,111 +87,116 @@ class WebPlaylist extends React.Component {
 			parent.insertBefore(placeholderLi, event.target);
 		}
 
-	}
+	};
 	dragEnter = (event) => this.bubbleEvent(event);
 	dragLeave = (event) => this.bubbleEvent(event);
+	addFile = (fileData) => {
+		if (!fileData.type.startsWith("audio/")) {
+			return;
+		}
+		let parentPlaylist = this;
+		let file = {
+			data: fileData,
+			audio: new function() {
+				this.element = null;
+				this.playing = false;
+				let self = this;
+				function secondsToPaddedMinutes(number) {
+					let minutes = Math.floor(number / 60);
+					let seconds = ("0" + Math.round(number - minutes*60)).slice(-2);
+					return `${minutes}:${seconds}`;
+				}
+				let onTimeUpdate = function() {
+					parentPlaylist.refs.timepos.textContent = secondsToPaddedMinutes(this.element.currentTime);
+					parentPlaylist.refs.seekBar.value = this.element.currentTime / this.element.duration;
+				}.bind(this);
+				let onSeekBarClick = function(event) {
+					let percentage = event.offsetX / this.offsetWidth;
+					self.element.currentTime = percentage * self.element.duration;
+					parentPlaylist.refs.seekBar.value = percentage / 100;
+				};
+				this.stop = function() {
+					if (this.element !== null) {
+						this.element.pause();
+						this.element.currentTime = 0;
+						this.playing = false;
+						parentPlaylist.refs.timepos.textContent = "";
+
+						this.element.removeEventListener("timeupdate", onTimeUpdate);
+						parentPlaylist.refs.seekBar.removeEventListener("click", onSeekBarClick);
+					}
+				};
+				this.play = function() {
+					if (this.element !== null) {
+						this.element.play();
+						this.playing = true;
+						this.paused = false;
+
+						this.element.addEventListener("timeupdate", onTimeUpdate);
+						parentPlaylist.refs.seekBar.addEventListener("click", onSeekBarClick);
+					}
+				};
+				this.pause = function() {
+					if (this.element !== null) {
+						this.element.pause();
+						this.paused = true;
+					}
+				};
+			},
+			buffer: null,
+			index: parentPlaylist.state.files.length,
+			createAudio: function(playWhenReady) {
+				if (this.buffer !== null) {
+					let blob = new Blob([this.buffer], {type: this.data.type});
+					this.audio.element = new Audio([URL.createObjectURL(blob)]);
+					this.audio.element.volume = parentPlaylist.state.volume;
+					this.audio.element.addEventListener("ended", function() {
+						this.playing = false;
+						parentPlaylist.playNextTrack(this);
+						parentPlaylist.refs.seekBar.value = 0;
+					}.bind(this));
+
+					if (playWhenReady) {
+						let onCanPlay = function(event) {
+							parentPlaylist.playFile(this);
+							this.audio.element.removeEventListener(event.type, onCanPlay);
+						}.bind(this);
+						this.audio.element.addEventListener("canplay", onCanPlay);
+					}
+				}
+			},
+			read: function(playWhenReady) {
+				let worker = new Worker(WORKER_FILEREADER);
+				worker.onmessage = function(message) {
+					this.buffer = message.data;
+					this.createAudio(playWhenReady);
+					worker.terminate();
+				}.bind(this);
+				worker.postMessage(this.data);
+			},
+
+		}
+		this.setState({files: this.state.files.concat([file])});
+	};
+	addMultipleFiles = (files) => {
+		for (let i = 0, fileData; fileData = files[i]; i++) {
+				this.addFile(fileData);
+		}
+	};
 	drop = (event) => {
 		if (!eventContainsFiles(event)) {
-			return this.cancelEvent(event);			
+			return this.cancelEvent(event);
 		}
 		event = this.cancelEvent(event);
 		event.dataTransfer.dropEffect = "copy";
-
-		let parentPlaylist = this;
-
-		for (let i = 0, fileData; fileData = event.dataTransfer.files[i]; i++) {
-			if (fileData.type.startsWith("audio/")) {
-				let _file = {
-					data: fileData,
-					audio: new function() {
-						this.element = null;
-						this.playing = false;
-						let self = this;
-						function secondsToPaddedMinutes(number) {
-							let minutes = Math.floor(number / 60);
-							let seconds = ("0" + Math.round(number - minutes*60)).slice(-2);
-							return `${minutes}:${seconds}`;
-						}
-						let onTimeUpdate = function() {
-							parentPlaylist.refs.timepos.textContent = secondsToPaddedMinutes(this.element.currentTime);
-							parentPlaylist.refs.seekBar.value = this.element.currentTime / this.element.duration;
-						}.bind(this);
-						let onSeekBarClick = function(event) {
-							let percentage = event.offsetX / this.offsetWidth;
-							self.element.currentTime = percentage * self.element.duration;
-							parentPlaylist.refs.seekBar.value = percentage / 100;
-						};
-						this.stop = function() {
-							if (this.element !== null) {
-								this.element.pause();
-								this.element.currentTime = 0;
-								this.playing = false;
-								parentPlaylist.refs.timepos.textContent = "";
-
-								this.element.removeEventListener("timeupdate", onTimeUpdate);
-								parentPlaylist.refs.seekBar.removeEventListener("click", onSeekBarClick);
-							}
-						};
-						this.play = function() {
-							if (this.element !== null) {
-								this.element.play();
-								this.playing = true;
-								this.paused = false;
-
-								this.element.addEventListener("timeupdate", onTimeUpdate);
-								parentPlaylist.refs.seekBar.addEventListener("click", onSeekBarClick);
-							}							
-						};
-						this.pause = function() {
-							if (this.element !== null) {
-								this.element.pause();
-								this.paused = true;
-							}							
-						};
-					},
-					buffer: null,
-					index: parentPlaylist.state.files.length,
-					createAudio: function(playWhenReady) {
-						if (this.buffer !== null) {
-							let blob = new Blob([this.buffer], {type: this.data.type});
-							this.audio.element = new Audio([URL.createObjectURL(blob)]);
-							this.audio.element.volume = parentPlaylist.state.volume;
-							this.audio.element.addEventListener("ended", function() {
-								this.playing = false;
-								parentPlaylist.playNextTrack(this);
-								parentPlaylist.refs.seekBar.value = 0;
-							}.bind(this));
-
-							if (playWhenReady) {
-								let onCanPlay = function(event) {
-									parentPlaylist.playFile(this);
-									this.audio.element.removeEventListener(event.type, onCanPlay);
-								}.bind(this);
-								this.audio.element.addEventListener("canplay", onCanPlay);							
-							}
-						}
-					},
-					read: function(playWhenReady) {
-						let worker = new Worker(WORKER_FILEREADER);
-						worker.onmessage = function(message) {
-							this.buffer = message.data;
-							this.createAudio(playWhenReady);
-							worker.terminate();
-						}.bind(this);
-						worker.postMessage(this.data);
-					},
-
-				}
-				this.setState({files: this.state.files.concat([_file])});
-			}
-		}
-	}
+		this.addMultipleFiles(event.dataTransfer.files);
+	};
 	keyDown = (event) => {
 		if (event.keyCode === 32) { //spacebar
 			this.cancelEvent(event);
 			return false;
 		}
-	}
+	};
 	keyUp = (event) => {
 		if (event.keyCode === 32) { //spacebar
 			if (!this.state.files.length) return event;
@@ -199,7 +204,7 @@ class WebPlaylist extends React.Component {
 			this.playPause();
 			return false;
 		}
-	}
+	};
 	componentDidMount = () => {
 		let dropzone = this.props.dropzone;
 		if (dropzone) {
@@ -210,7 +215,7 @@ class WebPlaylist extends React.Component {
 			dropzone.addEventListener("keydown", this.keyDown, false);
 			dropzone.addEventListener("keyup", this.keyUp, false);
 		}
-	}
+	};
 	componentWillUnmount = () => {
 		let dropzone = this.props.dropzone;
 		if (dropzone) {
@@ -221,7 +226,7 @@ class WebPlaylist extends React.Component {
 			dropzone.removeEventListener("keydown", this.keyDown, false);
 			dropzone.removeEventListener("keyup", this.keyDown, false);
 		}
-	}
+	};
 	playPause = () => {
 		if (this.state.currentTrack === null) {
 			this.playNextTrack();
@@ -233,8 +238,8 @@ class WebPlaylist extends React.Component {
 			else {
 				this.pauseCurrent();
 			}
-		}		
-	}
+		}
+	};
 	playNextTrack = (current) => {
 		let files = this.state.files;
 
@@ -262,7 +267,7 @@ class WebPlaylist extends React.Component {
 				return this.playFile(files[0]);
 			}
 		}
-	}
+	};
 	playPrevTrack = (current) => {
 		let files = this.state.files;
 		if (!current) {
@@ -279,7 +284,7 @@ class WebPlaylist extends React.Component {
 				return this.playFile(files[0]);
 			}
 		}
-	}
+	};
 	playFile = (fileToPlay) => {
 		if (!fileToPlay) return;
 		if (fileToPlay === this.state.currentTrack && fileToPlay.audio.playing && fileToPlay.audio.paused) {
@@ -299,13 +304,13 @@ class WebPlaylist extends React.Component {
 				fileToPlay.read(true);
 			}
 		}
-	}
+	};
 	pauseCurrent = () => {
 		if (this.state.currentTrack !== null) {
 			this.state.currentTrack.audio.pause();
 			this.forceUpdate();
 		}
-	}
+	};
 	removeFile = (fileToRemove) => {
 		let files = this.state.files;
 
@@ -319,7 +324,7 @@ class WebPlaylist extends React.Component {
 		});
 
 		this.setState({files: files});
-	}
+	};
 	toggleRepeat = () => {
 		if (this.state.repeatAll) {
 			this.setState({
@@ -339,7 +344,7 @@ class WebPlaylist extends React.Component {
 				repeatCurrent: false,
 			})
 		}
-	}
+	};
 	setVolume = (volume) => {
 		this.refs.volumeBar.value = volume;
 		this.state.files.forEach(file => {
@@ -348,7 +353,7 @@ class WebPlaylist extends React.Component {
 			}
 		});
 		this.setState({volume: volume});
-	}
+	};
 	toggleMute = () => {
 		if (this.state.volume > 0) {
 			this.setState({
@@ -359,14 +364,18 @@ class WebPlaylist extends React.Component {
 		else {
 			this.setVolume(this.state.mutedVolume);
 		}
-	}
+	};
+	addFilesFromInput = () => {
+		this.addMultipleFiles(this.refs.fileInput.files);
+	};
 	render = () => {
 
 		if (!this.state.files.length) {
 			return (
 				<div className="filedrop-prompt">
 					<i className="mdi mdi-file-music"></i>
-					<span>Drag & Drop a bunch of mp3s here!</span>
+					<span>Add or drag & drop some music!</span>
+					<input ref="fileInput" onChange={this.addFilesFromInput} type="file" multiple></input>
 				</div>
 			);
 		}
@@ -374,7 +383,7 @@ class WebPlaylist extends React.Component {
 		let parentPlaylist = this;
 
 		let tracks = this.state.files.map((file, index) => {
-			return <li 
+			return <li
 				className={file.audio.playing ? "playing" : ""}
 				key={"file-key-"+index}
 				data-id={index}
@@ -427,7 +436,7 @@ class WebPlaylist extends React.Component {
 
 
 				<div className="seekbar-wrap">
-					<progress className="seekbar" ref="seekBar" value="0" max="1"></progress> 
+					<progress className="seekbar" ref="seekBar" value="0" max="1"></progress>
 				</div>
 
 				<div className="controls">
@@ -443,7 +452,7 @@ class WebPlaylist extends React.Component {
 						<button onClick={function(){parentPlaylist.playPrevTrack(parentPlaylist.state.currentTrack)}}><i className="mdi mdi-skip-previous"></i></button>
 						<button onClick={parentPlaylist.playPause}><i className={getPlayPauseIcon()}></i></button>
 						<button onClick={function(){parentPlaylist.playNextTrack(parentPlaylist.state.currentTrack)}}><i className="mdi mdi-skip-next"></i></button>
-						<button 
+						<button
 							onClick={function() {parentPlaylist.setState({shuffle: !parentPlaylist.state.shuffle});}}
 							alt="toggle shuffle"
 							title="toggle shuffle"
@@ -460,7 +469,7 @@ class WebPlaylist extends React.Component {
 							</div>
 						</div>
 						<button alt="toggle mute" title="toggle mute" className="toggle-mute-button" onClick={parentPlaylist.toggleMute}><i className={"mdi "+getSpeakerIcon()}></i></button>
-					</div>		
+					</div>
 
 
 				</div>
@@ -468,6 +477,6 @@ class WebPlaylist extends React.Component {
 			</div>
 		);
 
-	}
+	};
 }
 ReactDOM.render(<WebPlaylist dropzone={window} />, document.getElementById("web-playlist-wrap"));

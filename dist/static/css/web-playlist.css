@@ -97,7 +97,7 @@ progress {
   color: red;
   cursor: pointer;
   -webkit-appearance: none;
-  border: none;	
+  border: none;
 }
 /* seekbar
 ================================================ */
@@ -156,13 +156,8 @@ progress {
 
 /*=================================================================================================================== */
 
-
-
-
-.playing {
-	font-weight: 700;
-	color: #000;
-}
+/* Drop-prompt
+================================================= */
 .filedrop-prompt {
 	flex: 1;
 	align-self: center;
@@ -171,8 +166,15 @@ progress {
 	text-transform: uppercase;
 	font-size: 25px;
 }
-.filedrop-prompt > i {
-	margin-right: 20px;
+.filedrop-prompt > input {
+	margin-left: 20px;
+}
+
+
+
+.playing {
+	font-weight: 700;
+	color: #000;
 }
 .tracklist {
 	flex: 1;
@@ -209,7 +211,7 @@ li:hover {
 }
 .remove-from-playlist-button {
 	color: #999;
-	transition: color 100ms ease-in-out;	
+	transition: color 100ms ease-in-out;
 }
 .remove-from-playlist-button:hover {
 	color: #000;
