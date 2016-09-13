@@ -7,11 +7,7 @@ import db from './indexedDB'
 
 registerServiceWorker({scope: '/'}).catch(error => console.log)
 
-console.log(db)
-
 const app = <App />
 const mount = document.getElementById('app')
-
-document.getElementById('page-loading-indicator').remove()
 
 ReactDOM.render(app, mount)

@@ -4,58 +4,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />    
     <title>Webpack boilerplate</title>
-    <style>
-      html, body, div, span, applet, object, iframe,h1, h2, h3, h4, h5, h6, p,
-      blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em,
-      img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u,
-      i, center,dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table,
-      caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details,
-      embed, figure, figcaption, footer, header, hgroup, menu, nav, output,
-      ruby, section, summary,time, mark, audio, video {
-      	margin: 0;
-      	padding: 0;
-      	border: 0;
-      	font-size: 100%;
-      	font: inherit;
-      	vertical-align: baseline;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html, body {
-        height: 100%;
-        font-size: 1rem;
-        background-color: #f5f5f5;
-      }
-      #page-loading-indicator {
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      #page-loading-indicator > p {
-        border-radius: 2px;
-        box-shadow: 0 1px 4px 0 rgba(0,0,0,0.37);
-        display: block;
-        height: 20vh;
-        line-height: 20vh;
-        padding: 0 2rem 0 2rem;
-        background: #fff;
-        font-size: 2rem;
-        font-family: sans-serif;
-        color: #616161;
-      }
-    </style>
   </head>
   <body>
-
-    <div id="page-loading-indicator">
-      <p>Loading app...</p>
-    </div>
-
     <div id="app"></div>
     <script defer type="text/javascript" src="vendor.bundle.js"></script>
-    <script defer type="text/javascript" src="app.js"></script>
+    <script defer type="text/javascript" src="app.bundle.js"></script>
   </body>
 </html>
