@@ -11,7 +11,7 @@ module.exports = {
 
     output: {
         path: path.join(__dirname, './dist'),
-        filename: '[name].js'
+        filename: '[name].bundle.js'
     },
 
     module: {
@@ -26,9 +26,6 @@ module.exports = {
         }, {
             test: /\.(eot|woff)$/i,
             loaders: ['file?hash=sha512&digest=hex&name=assets/[hash].[ext]']
-        }, {
-            test: /\.json$/,
-            loaders: ['json']
         }, {
             test: /\.css$/,
             exclude: /node_modules/,
