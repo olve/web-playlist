@@ -3,6 +3,7 @@ import autobind from 'autobind-decorator'
 import EventEmitter from 'event-emitter'
 
 import FileSelector from './file-selector'
+import TopBar from './top-bar'
 
 @autobind
 export default class App extends React.Component {
@@ -22,6 +23,7 @@ export default class App extends React.Component {
   render = () => (
       <div>
         <FileSelector zone={window} />
+        <TopBar />
       </div>
   )
 }

@@ -1,9 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import App from './components/App'
+import App from './components/app'
 import registerServiceWorker from 'serviceworker!./serviceworker.js'
-import db from './indexedDB'
+import db from './indexed-db'
+
+import './styles.css'
 
 registerServiceWorker({scope: '/'}).catch(error => console.log)
 

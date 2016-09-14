@@ -5,12 +5,26 @@ import EventEmitter from 'event-emitter'
 @autobind
 export default class FileSelector extends React.Component {
 
+  constructor(props, context) {
+    super()
+    this.files = []
+    context.ee.on('filesSelected', this.addFiles)
+  }
+
   static propTypes = {
     zone: React.PropTypes.any.isRequired,
   }
   static contextTypes = {
     ee: React.PropTypes.object.isRequired,
   }
+
+  static childContextTypes = {
+    files: React.PropTypes.array,
+  }
+  getChildContext = () => ({
+      files: this.files,
+  })
+
 
   componentDidMount() {
     this.props.zone.addEventListener("dragenter", this.dragEnter)
@@ -32,6 +46,18 @@ export default class FileSelector extends React.Component {
   dragEnter = (event) => this.cancelEvent(event)
   dragOver = (event) => this.cancelEvent(event)
   dragLeave = (event) => this.cancelEvent(event)
+
+  addFiles(files) {
+    for (let i=0, fileData; fileData = files[i]; i++) {
+      this.addFile(fileData)
+    }
+  }
+
+  addFile(fileData) {
+    this.files.push(fileData)
+    console.log(this.files)
+  }
+
   drop = (event) => {
 
     //break listener if user dropped something other than file(s)
@@ -39,9 +65,8 @@ export default class FileSelector extends React.Component {
 
     event = this.cancelEvent(event)
     event.dataTransfer.dropEffect = "copy"
-    for (let i=0, fileData; fileData = event.dataTransfer.files[i]; i++) {
-      console.log(fileData)
-    }
+    this.context.ee.emit('filesSelected', event.dataTransfer.files)
+
   }
 
   render() {
