@@ -6,22 +6,23 @@ import EventEmitter from 'event-emitter'
 export default class FileSelector extends React.Component {
 
   static propTypes = {
-    zone: React.PropTypes.element.isRequired,
+    zone: React.PropTypes.any.isRequired,
+  }
+  static contextTypes = {
+    ee: React.PropTypes.object.isRequired,
   }
 
   componentDidMount() {
-    const zone = this.props.zone
-    zone.addEventListener("dragenter", this.dragEnter)
-    zone.addEventListener("dragover", this.dragOver)
-    zone.addEventListener("dragleave", this.dragLeave)
-    zone.addEventListener("drop", this.drop)
+    this.props.zone.addEventListener("dragenter", this.dragEnter)
+    this.props.zone.addEventListener("dragover", this.dragOver)
+    this.props.zone.addEventListener("dragleave", this.dragLeave)
+    this.props.zone.addEventListener("drop", this.drop)
   }
   componentWillUnount() {
-    const zone = this.props.zone
-    zone.removeEventListener("dragenter", this.dragEnter)
-    zone.removeEventListener("dragover", this.dragOver)
-    zone.removeEventListener("dragleave", this.dragLeave)
-    zone.removeEventListener("drop", this.drop)
+    this.props.zone.removeEventListener("dragenter", this.dragEnter)
+    this.props.zone.removeEventListener("dragover", this.dragOver)
+    this.props.zone.removeEventListener("dragleave", this.dragLeave)
+    this.props.zone.removeEventListener("drop", this.drop)
   }
   cancelEvent(event) {
     event.stopPropagation()
@@ -32,7 +33,10 @@ export default class FileSelector extends React.Component {
   dragOver = (event) => this.cancelEvent(event)
   dragLeave = (event) => this.cancelEvent(event)
   drop = (event) => {
+
+    //break listener if user dropped something other than file(s)
     if (!event.dataTransfer.files.length) return
+
     event = this.cancelEvent(event)
     event.dataTransfer.dropEffect = "copy"
     for (let i=0, fileData; fileData = event.dataTransfer.files[i]; i++) {
@@ -41,6 +45,6 @@ export default class FileSelector extends React.Component {
   }
 
   render() {
-    return <p>dropzone</p>
+    return null
   }
 }
