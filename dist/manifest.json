@@ -1,6 +1,7 @@
 {
-  "name": "web-playlist",
-  "short_name": "web-playlist",
+  "name": "Audio Player",
+  "short_name": "Audio Player",
+  "lang": "en-GB",
   "icons": [{
     "src": "./assets/icons/playlist-play-128.png",
       "sizes": "128x128",
