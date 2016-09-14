@@ -43,10 +43,6 @@ export default class FileSelector extends React.Component {
     event.preventDefault()
     return event
   }
-  dragEnter = (event) => this.cancelEvent(event)
-  dragOver = (event) => this.cancelEvent(event)
-  dragLeave = (event) => this.cancelEvent(event)
-
   addFiles(files) {
     for (let i=0, fileData; fileData = files[i]; i++) {
       this.addFile(fileData)
@@ -54,19 +50,23 @@ export default class FileSelector extends React.Component {
   }
 
   addFile(fileData) {
-    this.files.push(fileData)
-    console.log(this.files)
+    //filter out non-audio files
+    console.log(fileData.type)
+    if (fileData.type.startsWith('audio/')) {
+      this.files.push(fileData)
+    }
   }
 
+  dragEnter = (event) => this.cancelEvent(event)
+  dragOver = (event) => this.cancelEvent(event)
+  dragLeave = (event) => this.cancelEvent(event)
   drop = (event) => {
-
     //break listener if user dropped something other than file(s)
     if (!event.dataTransfer.files.length) return
 
     event = this.cancelEvent(event)
     event.dataTransfer.dropEffect = "copy"
     this.context.ee.emit('filesSelected', event.dataTransfer.files)
-
   }
 
   render() {

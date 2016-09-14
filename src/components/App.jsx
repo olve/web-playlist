@@ -17,7 +17,7 @@ export default class App extends React.Component {
     ee: React.PropTypes.object,
   }
   getChildContext = () => ({
-      ee: this.ee,
+    ee: this.ee,
   })
 
   render = () => (

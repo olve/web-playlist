@@ -17,7 +17,7 @@ export default class TopBar extends React.Component {
   }
 
   render = () => (
-    <div className={styles.top}>
+    <div className={styles.topBar}>
       <input ref="fileInput" type="file" multiple={true} onChange={this.onFilesSelected.bind(this)} />
     </div>
   )

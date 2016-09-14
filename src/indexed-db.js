@@ -2,7 +2,7 @@ import Builder from 'indexeddb-promised'
 
 //https://github.com/vergara/indexeddb-promised
 
-const builder = new Builder('web-playlist-db')
+const builder = new Builder('audio-player-db')
   .setVersion(1)
   .addObjectStore({
     name: 'tracks',

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'web-playlist-cache'
+const CACHE_NAME = 'audio-player-cache'
 const urlsToCache = [
   '/',
   '/index.html',
