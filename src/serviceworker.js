@@ -6,11 +6,27 @@ const urlsToCache = [
   '/app.bundle.js',
 ]
 
+/* figure out how to serve a loading-indicator response while
+   waiting for timeout before using commented code.
+   currently the "Page not available" error is shown while waiting
+
+   const fetchTimeout = 0
+
+   self.addEventListener('fetch', event => {
+     function timeoutCache(delay) {
+       return new Promise((resolve, reject) => {
+         resolve(setTimeout(() => caches.match(event.request).then(response => response), delay))
+       })
+     }
+     event.respondWith(Promise.race([timeoutCache(fetchTimeout)], fetch(event.request).catch(() => response)))
+   })
+
+*/
+
+
+
 //caches to not delete on-activate
 const cacheWhitelist = []
-
-
-
 
 self.addEventListener('install', event => {
   event.waitUntil(

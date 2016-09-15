@@ -15,7 +15,7 @@ const builder = new Builder('audio-player-db')
       },
       {
         name: 'buffer',
-        buffer: 'pcm-buffer',
+        buffer: 'file content as arraybuffer',
         unqiue: false,
       },
       {
