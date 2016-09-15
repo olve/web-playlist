@@ -1,6 +1,5 @@
 import React from 'react'
 import autobind from 'autobind-decorator'
-import EventEmitter from 'event-emitter'
 
 @autobind
 export default class FileSelector extends React.Component {
@@ -16,6 +15,7 @@ export default class FileSelector extends React.Component {
   }
   static contextTypes = {
     ee: React.PropTypes.object.isRequired,
+    db: React.PropTypes.object.isRequired,
   }
 
   static childContextTypes = {
@@ -48,10 +48,8 @@ export default class FileSelector extends React.Component {
       this.addFile(fileData)
     }
   }
-
   addFile(fileData) {
     //filter out non-audio files
-    console.log(fileData.type)
     if (fileData.type.startsWith('audio/')) {
       this.files.push(fileData)
     }

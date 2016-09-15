@@ -9,7 +9,7 @@ import './styles.css'
 
 registerServiceWorker({scope: '/'}).catch(error => console.log)
 
-const app = <App />
+const app = <App db={db} />
 const mount = document.getElementById('app')
 
 ReactDOM.render(app, mount)
